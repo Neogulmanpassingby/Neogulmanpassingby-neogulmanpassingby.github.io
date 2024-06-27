@@ -11,8 +11,8 @@ let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나�
 const button = {
     x: 0,
     y: 0,
-    width: canvas.width * 0.2,  // 버튼 너비
-    height: canvas.width * 0.2  // 버튼 높이
+    width: 0,
+    height: 0
 };
 
 function resizeCanvas() {
@@ -54,8 +54,12 @@ function updateGrounds() {
 }
 
 function updateButtonPosition() {
-    button.x = canvas.width * 0.9; // 우측 하단 여백
-    button.y = canvas.height * 0.83; // 우측 하단 여백
+    button.width = canvas.width * 0.1;
+    button.height = button.width; // 정사각형으로 설정
+    button.x = canvas.width * 0.9 - button.width / 2; // 우측 하단 여백
+    button.y = canvas.height * 0.83 - button.height / 2; // 우측 하단 여백
+
+    console.log(`Button position: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
 }
 
 const player = {
@@ -63,7 +67,7 @@ const player = {
     y: 0,
     width: 0,
     height: 0,
-    speed: canvas.width * 0.01,
+    speed: 0,
     vx: 0,
     vy: 0,
     direction: 'right',
@@ -75,6 +79,7 @@ const player = {
 function updatePlayerSize() {
     player.width = canvas.width * 0.05;
     player.height = player.width;
+    player.speed = canvas.width * 0.01;
     player.x = canvas.width / 2 - player.width / 2;
     player.y = grounds.length > 0 ? grounds[0].y - player.height : 0;
 }
