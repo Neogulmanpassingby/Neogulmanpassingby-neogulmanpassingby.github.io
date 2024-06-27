@@ -11,8 +11,8 @@ let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나�
 const button = {
     x: 0,
     y: 0,
-    width: canvas.width * 0.1,  // 버튼 너비
-    height: canvas.width * 0.1  // 버튼 높이
+    width: canvas.width * 0.2,  // 버튼 너비
+    height: canvas.width * 0.2  // 버튼 높이
 };
 
 function resizeCanvas() {
