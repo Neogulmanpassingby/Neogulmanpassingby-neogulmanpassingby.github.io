@@ -11,34 +11,50 @@ let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나�
 const button = {
     x: 0,
     y: 0,
-    width: 100,  // 버튼 너비
-    height: 100  // 버튼 높이
+    width: canvas.width*0.1,  // 버튼 너비
+    height: canvas.width*0.1  // 버튼 높이
 };
 
 const arrow1 = {
     x: 0,
     y: 0,
-    width: 50,
-    height: 50
+    width: canvas.width*0.07,
+    height: canvas.width*0.07
 };
 
 const arrow2 = {
     x: 0,
     y: 0,
-    width: 50,
-    height: 50
+    width: canvas.width*0.07,
+    height: canvas.width*0.07
 };
 
 const arrow3 = {
     x: 0,
     y: 0,
-    width: 50,
-    height: 50
+    width: canvas.width*0.07,
+    height: canvas.width*0.07
 };
 
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const aspectRatio = 16 / 9;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    if (height > width) {
+        canvas.width = width;
+        canvas.height = width / aspectRatio;
+    } else {
+        canvas.width = width;
+        canvas.height = height;
+    }
+
+    // 화면 중앙에 배치
+    const canvasStyle = canvas.style;
+    canvasStyle.position = 'absolute';
+    canvasStyle.left = `${(window.innerWidth - canvas.width) / 2}px`;
+    canvasStyle.top = `${(window.innerHeight - canvas.height) / 2}px`;
+
     updateGrounds();
     updatePlayerSize();
     updateArrowsPosition();
@@ -80,7 +96,7 @@ const player = {
     y: 0,
     width: 0,
     height: 0,
-    speed: 3,
+    speed: canvas.width*0.01,
     vx: 0,
     vy: 0,
     direction: 'right',
@@ -145,14 +161,14 @@ let isJumping = false;
 let isFalling = false;
 let jumpFrameX = 0;
 let fallFrameX = 0;
-const gravity = 0.5;  // 중력을 조금 더 강하게 설정
-const jumpVelocity = -15; // 점프 속도 감소
+const gravity = canvas.height*0.001;  // 중력을 조금 더 강하게 설정
+const jumpVelocity = -canvas.height*0.03; // 점프 속도 감소
 
 const menu = {
     x: canvas.width * 0.45,
     y: grounds[8].y * 1.1,
-    width: 50,
-    height: 50,
+    width: canvas.width*0.03,
+    height: canvas.width*0.03,
     url: 'https://youtu.be/7HgJIAUtICU?si=0QYtt_nTZW-FNW95',
     health: 3,
     maxHealth: 3,
