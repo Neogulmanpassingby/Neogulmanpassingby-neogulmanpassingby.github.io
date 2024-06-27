@@ -1,6 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
+flag = 0;
 let grounds = [];
 let dustParticles = [];
 
@@ -21,6 +21,7 @@ function resizeCanvas() {
     const height = window.innerHeight;
     
     if (height > width) {
+        flag = 1;
         canvas.width = width;
         canvas.height = width / aspectRatio;
     } else {
@@ -54,8 +55,14 @@ function updateGrounds() {
 }
 
 function updateButtonPosition() {
-    button.x = canvas.width * 0.9; // 우측 하단 여백
-    button.y = canvas.height * 0.83; // 우측 하단 여백
+    if(flag === 0){
+        button.x = canvas.width * 0.9; // 우측 하단 여백
+        button.y = canvas.height * 0.83; // 우측 하단 여백
+    }else{
+        button.x = canvas.width * 0.9;
+        button.y = canvas*height * 1.6;
+    }
+   
 }
 
 const player = {
