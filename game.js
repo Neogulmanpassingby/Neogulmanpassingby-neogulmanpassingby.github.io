@@ -87,7 +87,7 @@ const menu = {
     width: 50,
     height: 50,
     color: 'red',
-    url: 'https://youtu.be/oM8Pb30dxcQ?si=zuWbIlaErVy9pHr1',
+    url: 'https://youtu.be/anO1yZ65SB8?si=84EMo9189D9MObaW',
     health: 3,
     maxHealth: 3,
     isFlashing: false // 메뉴가 번쩍이는지 여부
