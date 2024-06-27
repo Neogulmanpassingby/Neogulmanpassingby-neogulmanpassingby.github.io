@@ -11,8 +11,8 @@ let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나�
 const button = {
     x: 0,
     y: 0,
-    width: canvas.width*0.1,  // 버튼 너비
-    height: canvas.width*0.1  // 버튼 높이
+    width: canvas.width * 0.1,  // 버튼 너비
+    height: canvas.width * 0.1  // 버튼 높이
 };
 
 function resizeCanvas() {
@@ -63,7 +63,7 @@ const player = {
     y: 0,
     width: 0,
     height: 0,
-    speed: canvas.width*0.01,
+    speed: canvas.width * 0.01,
     vx: 0,
     vy: 0,
     direction: 'right',
@@ -119,14 +119,14 @@ let isJumping = false;
 let isFalling = false;
 let jumpFrameX = 0;
 let fallFrameX = 0;
-const gravity = canvas.height*0.001;  // 중력을 조금 더 강하게 설정
-const jumpVelocity = -canvas.height*0.03; // 점프 속도 감소
+const gravity = canvas.height * 0.001;  // 중력을 조금 더 강하게 설정
+const jumpVelocity = -canvas.height * 0.03; // 점프 속도 감소
 
 const menu = {
     x: canvas.width * 0.45,
     y: grounds[8].y * 1.1,
-    width: canvas.width*0.03,
-    height: canvas.width*0.03,
+    width: canvas.width * 0.03,
+    height: canvas.width * 0.03,
     url: 'https://youtu.be/7HgJIAUtICU?si=0QYtt_nTZW-FNW95',
     health: 3,
     maxHealth: 3,
@@ -415,6 +415,10 @@ function handleTouchStart(event) {
     touchStartX = firstTouch.clientX;
     touchStartY = firstTouch.clientY;
 
+    // 터치 좌표와 버튼 위치를 로그로 출력
+    console.log(`Touch start: (${touchStartX}, ${touchStartY})`);
+    console.log(`Button: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
+
     if (touchStartX > button.x && touchStartX < button.x + button.width &&
         touchStartY > button.y && touchStartY < button.y + button.height) {
         // 버튼을 터치했을 때 공격 실행
@@ -442,6 +446,16 @@ function handleTouchMove(event) {
     const touchEndY = touch.clientY;
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
+
+    // 터치 좌표와 버튼 위치를 로그로 출력
+    console.log(`Touch move: (${touchEndX}, ${touchEndY})`);
+    console.log(`Button: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
+
+    // 버튼 영역에 터치된 경우 이동을 막음
+    if (touchStartX > button.x && touchStartX < button.x + button.width &&
+        touchStartY > button.y && touchStartY < button.y + button.height) {
+        return;
+    }
 
     if (Math.abs(diffX) > Math.abs(diffY)) {
         if (diffX > 0) {
