@@ -117,7 +117,8 @@ const menu = {
     isFlashing: false // 메뉴가 번쩍이는지 여부
 };
 
-const attackSound = new Audio('path/to/your/attack/sound.mp3');
+const attackSound = new Audio('attack.mp3');
+attackSound.volume = 0.1;
 
 function drawSprite(img, sX, sY, sW, sH, dX, dY, dW, dH, flip = false) {
     ctx.save();
