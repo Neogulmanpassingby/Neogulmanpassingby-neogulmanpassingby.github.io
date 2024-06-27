@@ -15,27 +15,6 @@ const button = {
     height: canvas.width*0.1  // 버튼 높이
 };
 
-const arrow1 = {
-    x: 0,
-    y: 0,
-    width: canvas.width*0.07,
-    height: canvas.width*0.07
-};
-
-const arrow2 = {
-    x: 0,
-    y: 0,
-    width: canvas.width*0.07,
-    height: canvas.width*0.07
-};
-
-const arrow3 = {
-    x: 0,
-    y: 0,
-    width: canvas.width*0.07,
-    height: canvas.width*0.07
-};
-
 function resizeCanvas() {
     const aspectRatio = 16 / 9;
     const width = window.innerWidth;
@@ -57,7 +36,6 @@ function resizeCanvas() {
 
     updateGrounds();
     updatePlayerSize();
-    updateArrowsPosition();
     updateButtonPosition();
 }
 
@@ -78,17 +56,6 @@ function updateGrounds() {
 function updateButtonPosition() {
     button.x = canvas.width * 0.9; // 우측 하단 여백
     button.y = canvas.height * 0.83; // 우측 하단 여백
-}
-
-function updateArrowsPosition() {
-    arrow1.x = canvas.width*0.045;
-    arrow1.y = canvas.height*0.83; // 좌측 하단 여백
-
-    arrow2.x = canvas.width*0.075;
-    arrow2.y = canvas.height*0.9; // 좌측 하단 여백
-
-    arrow3.x = canvas.width*0.014;
-    arrow3.y = canvas.height*0.9; // 좌측 하단 여백
 }
 
 const player = {
@@ -140,15 +107,6 @@ backgroundImage.src = 'background.jpg';
 
 const buttonImage = new Image();
 buttonImage.src = 'button.png';
-
-const arrow1Image = new Image();
-arrow1Image.src = 'arrow1.png';
-
-const arrow2Image = new Image();
-arrow2Image.src = 'arrow2.png';
-
-const arrow3Image = new Image();
-arrow3Image.src = 'arrow3.png';
 
 const spriteWidth = 40;
 const spriteHeight = 40;
@@ -262,9 +220,6 @@ function update() {
     drawMenu(menu);
     drawDustParticles();
     ctx.drawImage(buttonImage, button.x, button.y, button.width, button.height); // 버튼 이미지 그리기
-    ctx.drawImage(arrow1Image, arrow1.x, arrow1.y, arrow1.width, arrow1.height); // Arrow1 이미지 그리기
-    ctx.drawImage(arrow2Image, arrow2.x, arrow2.y, arrow2.width, arrow2.height); // Arrow2 이미지 그리기
-    ctx.drawImage(arrow3Image, arrow3.x, arrow3.y, arrow3.width, arrow3.height); // Arrow3 이미지 그리기
 
     const flip = player.direction === 'left';
 
@@ -475,26 +430,6 @@ function handleTouchStart(event) {
                 }
             }
         }
-    } else if (touchStartX > arrow2.x && touchStartX < arrow2.x + arrow2.width &&
-               touchStartY > arrow2.y && touchStartY < arrow2.y + arrow2.height) {
-        // Arrow2를 터치했을 때 오른쪽 이동
-        player.vx = player.speed;
-        player.direction = 'right';
-    } else if (touchStartX > arrow3.x && touchStartX < arrow3.x + arrow3.width &&
-               touchStartY > arrow3.y && touchStartY < arrow3.y + arrow3.height) {
-        // Arrow3를 터치했을 때 왼쪽 이동
-        player.vx = -player.speed;
-        player.direction = 'left';
-    } else if (touchStartX > arrow1.x && touchStartX < arrow1.x + arrow1.width &&
-               touchStartY > arrow1.y && touchStartY < arrow1.y + arrow1.height) {
-        // Arrow1를 터치했을 때 점프
-        if (player.grounded && !player.m_bJump) {
-            player.vy = jumpVelocity;
-            isJumping = true;
-            jumpFrameX = 0;
-            player.grounded = false;
-            player.m_bJump = true;
-        }
     }
 }
 
@@ -516,7 +451,18 @@ function handleTouchMove(event) {
             player.vx = -player.speed;
             player.direction = 'left';
         }
+    } else {
+        if (diffY < -canvas.height * 0.05) { // 일정 거리 이상 위로 스와이프할 경우
+            if (player.grounded && !player.m_bJump) {
+                player.vy = jumpVelocity;
+                isJumping = true;
+                jumpFrameX = 0;
+                player.grounded = false;
+                player.m_bJump = true;
+            }
+        }
     }
+
     touchStartX = touchEndX;
     touchStartY = touchEndY;
 }
@@ -525,7 +471,7 @@ function handleTouchEnd(event) {
     player.vx = 0;
 }
 
-const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage, buttonImage, arrow1Image, arrow2Image, arrow3Image];
+const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage, buttonImage];
 let imagesLoaded = 0;
 
 function imageLoaded() {
