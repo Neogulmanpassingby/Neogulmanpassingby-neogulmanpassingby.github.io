@@ -3,11 +3,17 @@ const ctx = canvas.getContext('2d');
 
 let grounds = [];
 let dustParticles = [];
-let lastTouchTime = 0; // 마지막 터치 시간을 저장할 변수
 
 const maxDustParticles = 300; // 최대 먼지 입자 수
 let flashingTimer = null;
 let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나타내는 플래그
+
+const button = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+};
 
 function resizeCanvas() {
     const aspectRatio = 16 / 9;
@@ -30,6 +36,7 @@ function resizeCanvas() {
 
     updateGrounds();
     updatePlayerSize();
+    updateButtonPosition();
 }
 
 function updateGrounds() {
@@ -46,12 +53,27 @@ function updateGrounds() {
     ];
 }
 
+function updateButtonPosition() {
+    button.width = canvas.width * 0.1;
+    button.height = button.width; // 정사각형으로 설정
+    if (window.innerHeight > window.innerWidth) {
+        // 세로 모드
+        button.x = canvas.width * 0.9 - button.width / 2;
+        button.y = canvas.height * 2.7 - button.height / 2;
+    } else {
+        // 가로 모드
+        button.x = canvas.width * 0.9 - button.width / 2; // 우측 하단 여백
+        button.y = canvas.height * 0.9 - button.height / 2; // 우측 하단 여백
+    }
+    console.log(`Button position: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
+}
+
 const player = {
     x: 0,
     y: 0,
     width: 0,
     height: 0,
-    speed: 0,
+    speed: canvas.width * 0.01,
     vx: 0,
     vy: 0,
     direction: 'right',
@@ -63,7 +85,6 @@ const player = {
 function updatePlayerSize() {
     player.width = canvas.width * 0.05;
     player.height = player.width;
-    player.speed = canvas.width * 0.01;
     player.x = canvas.width / 2 - player.width / 2;
     player.y = grounds.length > 0 ? grounds[0].y - player.height : 0;
 }
@@ -397,6 +418,7 @@ document.addEventListener('touchend', handleTouchEnd, false);
 
 let touchStartX = null;
 let touchStartY = null;
+let lastTouchTime = 0; // 두 번 터치 감지를 위한 변수
 
 function handleTouchStart(event) {
     const firstTouch = event.touches[0];
@@ -423,12 +445,14 @@ function handleTouchMove(event) {
     const diffY = touchEndY - touchStartY;
 
     if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX > 0) {
-            player.vx = player.speed;
-            player.direction = 'right';
-        } else {
-            player.vx = -player.speed;
-            player.direction = 'left';
+        if (player.vx === 0) { // 현재 속도가 0일 때만 속도 설정
+            if (diffX > 0) {
+                player.vx = player.speed;
+                player.direction = 'right';
+            } else {
+                player.vx = -player.speed;
+                player.direction = 'left';
+            }
         }
     } else {
         if (diffY < -canvas.height * 0.05) { // 일정 거리 이상 위로 스와이프할 경우
