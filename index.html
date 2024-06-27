@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게임형 블로그</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #333;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #000;
+            image-rendering: pixelated; /* 도트 이미지가 선명하게 보이도록 설정 */
+            image-rendering: -moz-crisp-edges; /* Firefox */
+            image-rendering: -webkit-optimize-contrast; /* Webkit (Safari, Chrome) */
+            image-rendering: crisp-edges; /* CSS3 Proposed */
+            image-rendering: -o-crisp-edges; /* Opera */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script src="game.js"></script>
+</body>
+</html>
