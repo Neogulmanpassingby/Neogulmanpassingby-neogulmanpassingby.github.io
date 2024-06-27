@@ -160,7 +160,10 @@ const menu = {
 };
 
 const attackSound = new Audio('attack.mp3');
-attackSound.volume = 0.5; // 50% 볼륨
+attackSound.volume = 0.3; // 50% 볼륨
+
+const walkingSound = new Audio('walking.mp3');
+walkingSound.volume = 0.3; // 50% 볼륨
 
 function drawSprite(img, sX, sY, sW, sH, dX, dY, dW, dH, flip = false) {
     ctx.save();
@@ -333,6 +336,7 @@ function update() {
         if (player.vx !== 0 || isJumping) {
             if (gameFrame % staggerFrames === 0) {
                 frameX < 7 ? frameX++ : frameX = 0;
+                walkingSound.play(); 
                 createDustParticle(); // 이동 중일 때 먼지 입자 생성
             }
         } else {
@@ -523,5 +527,18 @@ images.forEach((image) => {
 // 배경 음악 재생
 document.addEventListener('DOMContentLoaded', () => {
     const backgroundMusic = document.getElementById('backgroundMusic');
-    backgroundMusic.play();
+    backgroundMusic.volume = 0.1; // 볼륨을 10%로 설정
+
+    // 사용자 상호작용 이벤트를 기다림
+    const playBackgroundMusic = () => {
+        backgroundMusic.play().catch(error => {
+            console.error("Failed to play background music:", error);
+        });
+        document.removeEventListener('click', playBackgroundMusic);
+        document.removeEventListener('keydown', playBackgroundMusic);
+    };
+
+    // 클릭이나 키다운 이벤트를 통해 배경 음악을 재생
+    document.addEventListener('click', playBackgroundMusic);
+    document.addEventListener('keydown', playBackgroundMusic);
 });
