@@ -11,6 +11,15 @@ let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나�
 const buttonImage = new Image();
 buttonImage.src = 'button.png';
 
+const arrow1Image = new Image();
+arrow1Image.src = 'Arrow1.png';
+
+const arrow2Image = new Image();
+arrow2Image.src = 'Arrow2.png';
+
+const arrow3Image = new Image();
+arrow3Image.src = 'Arrow3.png';
+
 const button = {
     x: 0,
     y: 0,
@@ -18,38 +27,35 @@ const button = {
     height: 100  // 버튼 높이
 };
 
-const player = {
+const arrow1 = {
     x: 0,
     y: 0,
-    width: 0,
-    height: 0,
-    speed: 3,
-    vx: 0,
-    vy: 0,
-    direction: 'right',
-    grounded: true,
-    m_bJump: false, // 점프 중인지 여부
-    fallFrameCount: 0 // 낙하 프레임 카운트
+    width: 50,
+    height: 50
+};
+
+const arrow2 = {
+    x: 0,
+    y: 0,
+    width: 50,
+    height: 50
+};
+
+const arrow3 = {
+    x: 0,
+    y: 0,
+    width: 50,
+    height: 50
 };
 
 function resizeCanvas() {
-    if (window.innerHeight > window.innerWidth) {
-        // 세로화면일 때 캔버스를 풀스크린으로 하지 않음
-        canvas.width = window.innerWidth * 0.9; // 너비를 화면의 90%로 설정
-        canvas.height = window.innerHeight * 0.9; // 높이를 화면의 90%로 설정
-    } else {
-        // 가로화면일 때 캔버스를 풀스크린으로 설정
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     updateGrounds();
     updatePlayerSize();
+    updateArrowsPosition();
     updateButtonPosition();
 }
-
-// 초기 설정
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
 
 function updateGrounds() {
     grounds = [
@@ -66,9 +72,34 @@ function updateGrounds() {
 }
 
 function updateButtonPosition() {
-    button.x = canvas.width - button.width - 20; // 우측 하단 여백
-    button.y = canvas.height - button.height - 20; // 우측 하단 여백
+    button.x = canvas.width * 0.9; // 우측 하단 여백
+    button.y = canvas.height * 0.83; // 우측 하단 여백
 }
+
+function updateArrowsPosition() {
+    arrow1.x = canvas.width*0.045;
+    arrow1.y = canvas.height*0.83; // 좌측 하단 여백
+
+    arrow2.x = canvas.width*0.075;
+    arrow2.y = canvas.height*0.9; // 좌측 하단 여백
+
+    arrow3.x = canvas.width*0.014;
+    arrow3.y = canvas.height*0.9; // 좌측 하단 여백
+}
+
+const player = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    speed: 3,
+    vx: 0,
+    vy: 0,
+    direction: 'right',
+    grounded: true,
+    m_bJump: false, // 점프 중인지 여부
+    fallFrameCount: 0 // 낙하 프레임 카운트
+};
 
 function updatePlayerSize() {
     player.width = canvas.width * 0.05;
@@ -129,10 +160,7 @@ const menu = {
 };
 
 const attackSound = new Audio('attack.mp3');
-attackSound.volume = 0.1;
-
-const walkingSound = new Audio('walking.mp3');
-walkingSound.volume = 0.15;
+attackSound.volume = 0.5; // 50% 볼륨
 
 function drawSprite(img, sX, sY, sW, sH, dX, dY, dW, dH, flip = false) {
     ctx.save();
@@ -215,6 +243,9 @@ function update() {
     drawMenu(menu);
     drawDustParticles();
     ctx.drawImage(buttonImage, button.x, button.y, button.width, button.height); // 버튼 이미지 그리기
+    ctx.drawImage(arrow1Image, arrow1.x, arrow1.y, arrow1.width, arrow1.height); // Arrow1 이미지 그리기
+    ctx.drawImage(arrow2Image, arrow2.x, arrow2.y, arrow2.width, arrow2.height); // Arrow2 이미지 그리기
+    ctx.drawImage(arrow3Image, arrow3.x, arrow3.y, arrow3.width, arrow3.height); // Arrow3 이미지 그리기
 
     const flip = player.direction === 'left';
 
@@ -302,7 +333,6 @@ function update() {
         if (player.vx !== 0 || isJumping) {
             if (gameFrame % staggerFrames === 0) {
                 frameX < 7 ? frameX++ : frameX = 0;
-                walkingSound.play();
                 createDustParticle(); // 이동 중일 때 먼지 입자 생성
             }
         } else {
@@ -404,24 +434,8 @@ document.addEventListener('touchend', handleTouchEnd, false);
 
 let touchStartX = null;
 let touchStartY = null;
-let lastTouchTime = 0; // 마지막 터치 시간을 기록
 
 function handleTouchStart(event) {
-    const currentTime = new Date().getTime();
-    const timeDifference = currentTime - lastTouchTime;
-    
-    if (timeDifference < 300) { // 300ms 이내에 두 번 터치하면 점프
-        if (player.grounded && !player.m_bJump) {
-            player.vy = jumpVelocity;
-            isJumping = true;
-            jumpFrameX = 0;
-            player.grounded = false;
-            player.m_bJump = true; // 점프 상태 설정
-        }
-    }
-    
-    lastTouchTime = currentTime;
-
     const firstTouch = event.touches[0];
     touchStartX = firstTouch.clientX;
     touchStartY = firstTouch.clientY;
@@ -441,12 +455,26 @@ function handleTouchStart(event) {
                 }
             }
         }
-    } else if (touchStartX < canvas.width / 2) {
-        player.vx = -player.speed;
-        player.direction = 'left';
-    } else {
+    } else if (touchStartX > arrow2.x && touchStartX < arrow2.x + arrow2.width &&
+               touchStartY > arrow2.y && touchStartY < arrow2.y + arrow2.height) {
+        // Arrow2를 터치했을 때 오른쪽 이동
         player.vx = player.speed;
         player.direction = 'right';
+    } else if (touchStartX > arrow3.x && touchStartX < arrow3.x + arrow3.width &&
+               touchStartY > arrow3.y && touchStartY < arrow3.y + arrow3.height) {
+        // Arrow3를 터치했을 때 왼쪽 이동
+        player.vx = -player.speed;
+        player.direction = 'left';
+    } else if (touchStartX > arrow1.x && touchStartX < arrow1.x + arrow1.width &&
+               touchStartY > arrow1.y && touchStartY < arrow1.y + arrow1.height) {
+        // Arrow1를 터치했을 때 점프
+        if (player.grounded && !player.m_bJump) {
+            player.vy = jumpVelocity;
+            isJumping = true;
+            jumpFrameX = 0;
+            player.grounded = false;
+            player.m_bJump = true;
+        }
     }
 }
 
@@ -477,7 +505,7 @@ function handleTouchEnd(event) {
     player.vx = 0;
 }
 
-const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage, buttonImage];
+const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage, buttonImage, arrow1Image, arrow2Image, arrow3Image];
 let imagesLoaded = 0;
 
 function imageLoaded() {
@@ -492,19 +520,8 @@ images.forEach((image) => {
     image.onload = imageLoaded;
 });
 
+// 배경 음악 재생
 document.addEventListener('DOMContentLoaded', () => {
     const backgroundMusic = document.getElementById('backgroundMusic');
-    backgroundMusic.volume = 0.05;
-    // 사용자 상호작용 이벤트를 기다림
-    const playBackgroundMusic = () => {
-        backgroundMusic.play().catch(error => {
-            console.error("Failed to play background music:", error);
-        });
-        document.removeEventListener('click', playBackgroundMusic);
-        document.removeEventListener('keydown', playBackgroundMusic);
-    };
-
-    // 클릭이나 키다운 이벤트를 통해 배경 음악을 재생
-    document.addEventListener('click', playBackgroundMusic);
-    document.addEventListener('keydown', playBackgroundMusic);
+    backgroundMusic.play();
 });
