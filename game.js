@@ -126,13 +126,13 @@ const buttonImage = new Image();
 buttonImage.src = 'button.png';
 
 const arrow1Image = new Image();
-arrow1Image.src = 'Arrow1.png';
+arrow1Image.src = 'arrow1.png';
 
 const arrow2Image = new Image();
-arrow2Image.src = 'Arrow2.png';
+arrow2Image.src = 'arrow2.png';
 
 const arrow3Image = new Image();
-arrow3Image.src = 'Arrow3.png';
+arrow3Image.src = 'arrow3.png';
 
 const spriteWidth = 40;
 const spriteHeight = 40;
