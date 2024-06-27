@@ -411,7 +411,30 @@ let touchStartX = null;
 let touchStartY = null;
 
 function handleTouchStart(event) {
-    
+    const firstTouch = event.touches[0];
+    touchStartX = firstTouch.clientX;
+    touchStartY = firstTouch.clientY;
+
+    // 터치 좌표와 버튼 위치를 로그로 출력
+    console.log(`Touch start: (${touchStartX}, ${touchStartY})`);
+    console.log(`Button: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
+
+    if (touchStartX > button.x && touchStartX < button.x + button.width &&
+        touchStartY > button.y && touchStartY < button.y + button.height) {
+        // 버튼을 터치했을 때 공격 실행
+        isAttacking = true;
+        attackFrameX = 0;
+        attackSound.play();
+        if (checkCollision(player, menu)) {
+            if (menu.health > 0) {
+                startFlashing(menu);
+                menu.health = 0;
+                if (menu.health <= 0) {
+                    window.location.href = menu.url;
+                }
+            }
+        }
+    }
 }
 
 function handleTouchMove(event) {
@@ -431,20 +454,9 @@ function handleTouchMove(event) {
     // 버튼 영역에 터치된 경우 이동을 막음
     if (touchStartX > button.x && touchStartX < button.x + button.width &&
         touchStartY > button.y && touchStartY < button.y + button.height) {
-            isAttacking = true;
-            attackFrameX = 0;
-            attackSound.play();
-            if (checkCollision(player, menu)) {
-                if (menu.health > 0) {
-                    startFlashing(menu);
-                    menu.health = 0;
-                    if (menu.health <= 0) {
-                        window.location.href = menu.url;
-                    }
-                }
-            }
+        return;
     }
-   
+
     if (Math.abs(diffX) > Math.abs(diffY)) {
         if (diffX > 0) {
             player.vx = player.speed;
