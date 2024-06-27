@@ -18,13 +18,38 @@ const button = {
     height: 100  // 버튼 높이
 };
 
+const player = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    speed: 3,
+    vx: 0,
+    vy: 0,
+    direction: 'right',
+    grounded: true,
+    m_bJump: false, // 점프 중인지 여부
+    fallFrameCount: 0 // 낙하 프레임 카운트
+};
+
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    if (window.innerHeight > window.innerWidth) {
+        // 세로화면일 때 캔버스를 풀스크린으로 하지 않음
+        canvas.width = window.innerWidth * 0.9; // 너비를 화면의 90%로 설정
+        canvas.height = window.innerHeight * 0.9; // 높이를 화면의 90%로 설정
+    } else {
+        // 가로화면일 때 캔버스를 풀스크린으로 설정
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
     updateGrounds();
     updatePlayerSize();
     updateButtonPosition();
 }
+
+// 초기 설정
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 function updateGrounds() {
     grounds = [
@@ -44,20 +69,6 @@ function updateButtonPosition() {
     button.x = canvas.width - button.width - 20; // 우측 하단 여백
     button.y = canvas.height - button.height - 20; // 우측 하단 여백
 }
-
-const player = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-    speed: 3,
-    vx: 0,
-    vy: 0,
-    direction: 'right',
-    grounded: true,
-    m_bJump: false, // 점프 중인지 여부
-    fallFrameCount: 0 // 낙하 프레임 카운트
-};
 
 function updatePlayerSize() {
     player.width = canvas.width * 0.05;
@@ -119,6 +130,9 @@ const menu = {
 
 const attackSound = new Audio('attack.mp3');
 attackSound.volume = 0.1;
+
+const walkingSound = new Audio('walking.mp3');
+walkingSound.volume = 0.15;
 
 function drawSprite(img, sX, sY, sW, sH, dX, dY, dW, dH, flip = false) {
     ctx.save();
@@ -288,6 +302,7 @@ function update() {
         if (player.vx !== 0 || isJumping) {
             if (gameFrame % staggerFrames === 0) {
                 frameX < 7 ? frameX++ : frameX = 0;
+                walkingSound.play();
                 createDustParticle(); // 이동 중일 때 먼지 입자 생성
             }
         } else {
@@ -389,8 +404,24 @@ document.addEventListener('touchend', handleTouchEnd, false);
 
 let touchStartX = null;
 let touchStartY = null;
+let lastTouchTime = 0; // 마지막 터치 시간을 기록
 
 function handleTouchStart(event) {
+    const currentTime = new Date().getTime();
+    const timeDifference = currentTime - lastTouchTime;
+    
+    if (timeDifference < 300) { // 300ms 이내에 두 번 터치하면 점프
+        if (player.grounded && !player.m_bJump) {
+            player.vy = jumpVelocity;
+            isJumping = true;
+            jumpFrameX = 0;
+            player.grounded = false;
+            player.m_bJump = true; // 점프 상태 설정
+        }
+    }
+    
+    lastTouchTime = currentTime;
+
     const firstTouch = event.touches[0];
     touchStartX = firstTouch.clientX;
     touchStartY = firstTouch.clientY;
@@ -461,8 +492,19 @@ images.forEach((image) => {
     image.onload = imageLoaded;
 });
 
-// 배경 음악 재생
 document.addEventListener('DOMContentLoaded', () => {
     const backgroundMusic = document.getElementById('backgroundMusic');
-    backgroundMusic.play();
+    backgroundMusic.volume = 0.05;
+    // 사용자 상호작용 이벤트를 기다림
+    const playBackgroundMusic = () => {
+        backgroundMusic.play().catch(error => {
+            console.error("Failed to play background music:", error);
+        });
+        document.removeEventListener('click', playBackgroundMusic);
+        document.removeEventListener('keydown', playBackgroundMusic);
+    };
+
+    // 클릭이나 키다운 이벤트를 통해 배경 음악을 재생
+    document.addEventListener('click', playBackgroundMusic);
+    document.addEventListener('keydown', playBackgroundMusic);
 });
