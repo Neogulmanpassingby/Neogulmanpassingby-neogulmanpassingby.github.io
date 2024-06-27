@@ -1,6 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-flag = 0;
+
 let grounds = [];
 let dustParticles = [];
 
@@ -11,8 +11,8 @@ let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나�
 const button = {
     x: 0,
     y: 0,
-    width: canvas.width * 0.2,  // 버튼 너비
-    height: canvas.width * 0.2  // 버튼 높이
+    width: 0,
+    height: 0
 };
 
 function resizeCanvas() {
@@ -21,7 +21,6 @@ function resizeCanvas() {
     const height = window.innerHeight;
     
     if (height > width) {
-        flag = 1;
         canvas.width = width;
         canvas.height = width / aspectRatio;
     } else {
@@ -55,14 +54,18 @@ function updateGrounds() {
 }
 
 function updateButtonPosition() {
-    if(flag === 0){
-        button.x = canvas.width * 0.9; // 우측 하단 여백
-        button.y = canvas.height * 0.83; // 우측 하단 여백
-    }else{
-        button.x = canvas.width * 0.9;
-        button.y = canvas.height * 1.6;
+    button.width = canvas.width * 0.1;
+    button.height = button.width; // 정사각형으로 설정
+    if (window.innerHeight > window.innerWidth) {
+        // 세로 모드
+        button.x = canvas.width * 0.9 - button.width / 2;
+        button.y = canvas.height * 0.9 - button.height / 2;
+    } else {
+        // 가로 모드
+        button.x = canvas.width * 0.9 - button.width / 2; // 우측 하단 여백
+        button.y = canvas.height * 0.9 - button.height / 2; // 우측 하단 여백
     }
-   
+    console.log(`Button position: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
 }
 
 const player = {
