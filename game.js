@@ -8,18 +8,6 @@ const maxDustParticles = 300; // 최대 먼지 입자 수
 let flashingTimer = null;
 let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나타내는 플래그
 
-const buttonImage = new Image();
-buttonImage.src = 'button.png';
-
-const arrow1Image = new Image();
-arrow1Image.src = 'Arrow1.png';
-
-const arrow2Image = new Image();
-arrow2Image.src = 'Arrow2.png';
-
-const arrow3Image = new Image();
-arrow3Image.src = 'Arrow3.png';
-
 const button = {
     x: 0,
     y: 0,
@@ -133,6 +121,18 @@ menuImage.src = 'menu.png';  // 메뉴 이미지 경로
 
 const backgroundImage = new Image();
 backgroundImage.src = 'background.jpg';
+
+const buttonImage = new Image();
+buttonImage.src = 'button.png';
+
+const arrow1Image = new Image();
+arrow1Image.src = 'Arrow1.png';
+
+const arrow2Image = new Image();
+arrow2Image.src = 'Arrow2.png';
+
+const arrow3Image = new Image();
+arrow3Image.src = 'Arrow3.png';
 
 const spriteWidth = 40;
 const spriteHeight = 40;
