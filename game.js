@@ -2,12 +2,28 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let grounds = [];
+let dustParticles = [];
+
+const maxDustParticles = 300; // 최대 먼지 입자 수
+let flashingTimer = null;
+let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나타내는 플래그
+
+const buttonImage = new Image();
+buttonImage.src = 'button.png';
+
+const button = {
+    x: 0,
+    y: 0,
+    width: 100,  // 버튼 너비
+    height: 100  // 버튼 높이
+};
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     updateGrounds();
     updatePlayerSize();
+    updateButtonPosition();
 }
 
 function updateGrounds() {
@@ -15,9 +31,18 @@ function updateGrounds() {
         { x: 0, y: canvas.height * 0.75, width: canvas.width, height: 50 },  // 기본 땅
         { x: canvas.width * 0.20, y: canvas.height * 0.48, width: canvas.width * 0.2, height: 50 }, // 중간 발판
         { x: canvas.width * 0.18, y: canvas.height * 0.54, width: canvas.width * 0.64, height: 20 },  // 울타리
-        { x: canvas.width * 0.54, y: canvas.height * 0.24, width: canvas.width * 0.05, height: 20 },  // 나무1
+        { x: canvas.width * 0.79, y: canvas.height * 0.43, width: canvas.width * 0.009, height: 20 },  // 울타리
+        { x: canvas.width * 0.85, y: canvas.height * 0.46, width: canvas.width * 0.009, height: 20 },
+        { x: canvas.width * 0.9, y: canvas.height * 0.35, width: canvas.width * 0.007, height: 20 },
+        { x: canvas.width * 0.93, y: canvas.height * 0.48, width: canvas.width * 0.007, height: 20 },
+        { x: canvas.width * 0.5, y: canvas.height * 0.24, width: canvas.width * 0.05, height: 20 },  // 나무1
         { x: canvas.width * 0.49, y: canvas.height * 0.15, width: canvas.width * 0.01, height: 20 },  // 나무2
     ];
+}
+
+function updateButtonPosition() {
+    button.x = canvas.width - button.width - 20; // 우측 하단 여백
+    button.y = canvas.height - button.height - 20; // 우측 하단 여백
 }
 
 const player = {
@@ -62,7 +87,7 @@ const fallImage = new Image();
 fallImage.src = 'fall.png';
 
 const menuImage = new Image();
-menuImage.src = 'menu.png';
+menuImage.src = 'menu.png';  // 메뉴 이미지 경로
 
 const backgroundImage = new Image();
 backgroundImage.src = 'background.jpg';
@@ -82,16 +107,17 @@ const gravity = 0.5;  // 중력을 조금 더 강하게 설정
 const jumpVelocity = -15; // 점프 속도 감소
 
 const menu = {
-    x: canvas.width / 2 - 50,
-    y: grounds.length > 0 ? grounds[1].y - 50 : 0,
+    x: canvas.width * 0.45,
+    y: grounds[8].y * 1.1,
     width: 50,
     height: 50,
-    color: 'red',
-    url: 'https://youtu.be/anO1yZ65SB8?si=84EMo9189D9MObaW',
+    url: 'https://youtu.be/7HgJIAUtICU?si=0QYtt_nTZW-FNW95',
     health: 3,
     maxHealth: 3,
     isFlashing: false // 메뉴가 번쩍이는지 여부
 };
+
+const attackSound = new Audio('path/to/your/attack/sound.mp3');
 
 function drawSprite(img, sX, sY, sW, sH, dX, dY, dW, dH, flip = false) {
     ctx.save();
@@ -106,13 +132,14 @@ function drawSprite(img, sX, sY, sW, sH, dX, dY, dW, dH, flip = false) {
 
 function drawMenu(menu) {
     if (menu.isFlashing) {
-        ctx.filter = 'brightness(3)'; // 하얀색으로 번쩍이게 하기 위해 밝기 조정
-    }
-
-    ctx.drawImage(menuImage, menu.x, menu.y, menu.width, menu.height);
-
-    if (menu.isFlashing) {
-        ctx.filter = 'none'; // 필터 초기화
+        // 하얀색으로 번쩍이게 하기 위해 밝기 조정
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.filter = 'brightness(3)';
+        ctx.drawImage(menuImage, menu.x, menu.y, menu.width, menu.height);
+        ctx.restore();
+    } else {
+        ctx.drawImage(menuImage, menu.x, menu.y, menu.width, menu.height);
     }
 }
 
@@ -121,6 +148,36 @@ function drawGrounds() {
     grounds.forEach(ground => {
         ctx.fillRect(ground.x, ground.y, ground.width, ground.height);
     });
+}
+
+function drawDustParticles() {
+    dustParticles.forEach((particle, index) => {
+        ctx.globalAlpha = particle.alpha;
+        ctx.fillStyle = 'rgba(229, 191, 129, 1)';
+        ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+        ctx.globalAlpha = 1;
+
+        particle.x += particle.vx * 0.5;
+        particle.y += particle.vy * 0.5;
+        particle.alpha -= 0.02;
+        if (particle.alpha <= 0) {
+            dustParticles.splice(index, 1);
+        }
+    });
+}
+
+function createDustParticle() {
+    for (let i = 0; i < 3; i++) {
+        const size = Math.random() * 3 + 1;
+        const x = player.direction === 'right' ? player.x + player.width * 0.3 : player.x + player.width * 0.7;
+        const y = player.y + player.height * 0.75;
+        const vx = Math.random() * 2;
+        const vy = -Math.random() * 2;
+
+        if (dustParticles.length < maxDustParticles) {
+            dustParticles.push({ x, y, vx, vy, size, alpha: 1 });
+        }
+    }
 }
 
 function clearCanvas() {
@@ -141,6 +198,8 @@ function update() {
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     drawGrounds();
     drawMenu(menu);
+    drawDustParticles();
+    ctx.drawImage(buttonImage, button.x, button.y, button.width, button.height); // 버튼 이미지 그리기
 
     const flip = player.direction === 'left';
 
@@ -160,6 +219,7 @@ function update() {
                     menu.isFlashing = false; // 번쩍임을 종료
                 }, 100); // 100ms 후에 종료
                 menu.health = 0; // 체력을 모두 감소시킴
+                attackSound.play(); // 공격 소리 재생
                 if (menu.health <= 0) {
                     window.location.href = menu.url;
                 }
@@ -227,6 +287,7 @@ function update() {
         if (player.vx !== 0 || isJumping) {
             if (gameFrame % staggerFrames === 0) {
                 frameX < 7 ? frameX++ : frameX = 0;
+                createDustParticle(); // 이동 중일 때 먼지 입자 생성
             }
         } else {
             frameX = 0;
@@ -239,14 +300,26 @@ function update() {
                 break;
             }
         }
-        
+
         if (!onGround) {
             isFalling = true;
             player.vy += gravity;
         }
     }
 
+    // 플레이어가 우측 끝에 도달했을 때 페이지 이동
+    if (!hasReachedRightEnd && player.x + player.width >= canvas.width) {
+        hasReachedRightEnd = true;
+        window.location.href = 'https://onesdiary.tistory.com/'; // 이동할 주소
+    }
+
     player.x += player.vx;
+
+    // 플레이어가 왼쪽 끝에 도달했을 때 멈춤
+    if (player.x < 0) {
+        player.x = 0;
+    }
+
     gameFrame++;
 }
 
@@ -275,6 +348,16 @@ function attack(event) {
     if (event.key === ' ') {
         isAttacking = true;
         attackFrameX = 0;
+        attackSound.play(); // 공격 소리 재생
+        if (checkCollision(player, menu)) {
+            if (menu.health > 0) {
+                startFlashing(menu); // 번쩍임 효과 시작
+                menu.health = 0; // 체력을 모두 감소시킴
+                if (menu.health <= 0) {
+                    window.location.href = menu.url;
+                }
+            }
+        }
     }
 }
 
@@ -298,7 +381,71 @@ document.addEventListener('keyup', stopPlayer);
 document.addEventListener('keydown', attack);
 document.addEventListener('keydown', jump);
 
-const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage];
+// 터치 이벤트 추가
+document.addEventListener('touchstart', handleTouchStart, false);
+document.addEventListener('touchmove', handleTouchMove, false);
+document.addEventListener('touchend', handleTouchEnd, false);
+
+let touchStartX = null;
+let touchStartY = null;
+
+function handleTouchStart(event) {
+    const firstTouch = event.touches[0];
+    touchStartX = firstTouch.clientX;
+    touchStartY = firstTouch.clientY;
+
+    if (touchStartX > button.x && touchStartX < button.x + button.width &&
+        touchStartY > button.y && touchStartY < button.y + button.height) {
+        // 버튼을 터치했을 때 공격 실행
+        isAttacking = true;
+        attackFrameX = 0;
+        attackSound.play();
+        if (checkCollision(player, menu)) {
+            if (menu.health > 0) {
+                startFlashing(menu);
+                menu.health = 0;
+                if (menu.health <= 0) {
+                    window.location.href = menu.url;
+                }
+            }
+        }
+    } else if (touchStartX < canvas.width / 2) {
+        player.vx = -player.speed;
+        player.direction = 'left';
+    } else {
+        player.vx = player.speed;
+        player.direction = 'right';
+    }
+}
+
+function handleTouchMove(event) {
+    if (!touchStartX || !touchStartY) {
+        return;
+    }
+    const touch = event.touches[0];
+    const touchEndX = touch.clientX;
+    const touchEndY = touch.clientY;
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 0) {
+            player.vx = player.speed;
+            player.direction = 'right';
+        } else {
+            player.vx = -player.speed;
+            player.direction = 'left';
+        }
+    }
+    touchStartX = touchEndX;
+    touchStartY = touchEndY;
+}
+
+function handleTouchEnd(event) {
+    player.vx = 0;
+}
+
+const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage, buttonImage];
 let imagesLoaded = 0;
 
 function imageLoaded() {
@@ -311,4 +458,10 @@ function imageLoaded() {
 
 images.forEach((image) => {
     image.onload = imageLoaded;
+});
+
+// 배경 음악 재생
+document.addEventListener('DOMContentLoaded', () => {
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    backgroundMusic.play();
 });
