@@ -59,11 +59,11 @@ function updateButtonPosition() {
     if (window.innerHeight > window.innerWidth) {
         // 세로 모드
         button.x = canvas.width * 0.9 - button.width / 2;
-        button.y = canvas.height * 0.9 - button.height / 2;
+        button.y = canvas.height * 2.7 - button.height / 2;
     } else {
         // 가로 모드
         button.x = canvas.width * 0.9 - button.width / 2; // 우측 하단 여백
-        button.y = canvas.height * 2.7 - button.height / 2; // 우측 하단 여백
+        button.y = canvas.height * 0.9 - button.height / 2; // 우측 하단 여백
     }
     console.log(`Button position: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
 }
