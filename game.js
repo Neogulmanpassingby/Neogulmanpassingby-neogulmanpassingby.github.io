@@ -3,17 +3,11 @@ const ctx = canvas.getContext('2d');
 
 let grounds = [];
 let dustParticles = [];
+let lastTouchTime = 0; // 마지막 터치 시간을 저장할 변수
 
 const maxDustParticles = 300; // 최대 먼지 입자 수
 let flashingTimer = null;
 let hasReachedRightEnd = false; // 우측 끝에 도달했는지 여부를 나타내는 플래그
-
-const button = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0
-};
 
 function resizeCanvas() {
     const aspectRatio = 16 / 9;
@@ -36,7 +30,6 @@ function resizeCanvas() {
 
     updateGrounds();
     updatePlayerSize();
-    updateButtonPosition();
 }
 
 function updateGrounds() {
@@ -53,27 +46,12 @@ function updateGrounds() {
     ];
 }
 
-function updateButtonPosition() {
-    button.width = canvas.width * 0.1;
-    button.height = button.width; // 정사각형으로 설정
-    if (window.innerHeight > window.innerWidth) {
-        // 세로 모드
-        button.x = canvas.width * 0.9 - button.width / 2;
-        button.y = canvas.height * 2.7 - button.height / 2;
-    } else {
-        // 가로 모드
-        button.x = canvas.width * 0.9 - button.width / 2; // 우측 하단 여백
-        button.y = canvas.height * 0.9 - button.height / 2; // 우측 하단 여백
-    }
-    console.log(`Button position: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
-}
-
 const player = {
     x: 0,
     y: 0,
     width: 0,
     height: 0,
-    speed: canvas.width * 0.01,
+    speed: 0,
     vx: 0,
     vy: 0,
     direction: 'right',
@@ -85,6 +63,7 @@ const player = {
 function updatePlayerSize() {
     player.width = canvas.width * 0.05;
     player.height = player.width;
+    player.speed = canvas.width * 0.01;
     player.x = canvas.width / 2 - player.width / 2;
     player.y = grounds.length > 0 ? grounds[0].y - player.height : 0;
 }
@@ -114,9 +93,6 @@ menuImage.src = 'menu.png';  // 메뉴 이미지 경로
 
 const backgroundImage = new Image();
 backgroundImage.src = 'background.jpg';
-
-const buttonImage = new Image();
-buttonImage.src = 'button.png';
 
 const spriteWidth = 40;
 const spriteHeight = 40;
@@ -229,7 +205,6 @@ function update() {
     drawGrounds();
     drawMenu(menu);
     drawDustParticles();
-    ctx.drawImage(buttonImage, button.x, button.y, button.width, button.height); // 버튼 이미지 그리기
 
     const flip = player.direction === 'left';
 
@@ -375,18 +350,16 @@ function stopPlayer(event) {
     }
 }
 
-function attack(event) {
-    if (event.key === ' ') {
-        isAttacking = true;
-        attackFrameX = 0;
-        attackSound.play(); // 공격 소리 재생
-        if (checkCollision(player, menu)) {
-            if (menu.health > 0) {
-                startFlashing(menu); // 번쩍임 효과 시작
-                menu.health = 0; // 체력을 모두 감소시킴
-                if (menu.health <= 0) {
-                    window.location.href = menu.url;
-                }
+function attack() {
+    isAttacking = true;
+    attackFrameX = 0;
+    attackSound.play(); // 공격 소리 재생
+    if (checkCollision(player, menu)) {
+        if (menu.health > 0) {
+            startFlashing(menu); // 번쩍임 효과 시작
+            menu.health = 0; // 체력을 모두 감소시킴
+            if (menu.health <= 0) {
+                window.location.href = menu.url;
             }
         }
     }
@@ -409,8 +382,13 @@ function stopAttack() {
 
 document.addEventListener('keydown', movePlayer);
 document.addEventListener('keyup', stopPlayer);
-document.addEventListener('keydown', attack);
-document.addEventListener('keydown', jump);
+document.addEventListener('keydown', (event) => {
+    if (event.key === ' ') {
+        attack();
+    } else if (event.key === 'ArrowUp') {
+        jump(event);
+    }
+});
 
 // 터치 이벤트 추가
 document.addEventListener('touchstart', handleTouchStart, false);
@@ -425,26 +403,13 @@ function handleTouchStart(event) {
     touchStartX = firstTouch.clientX;
     touchStartY = firstTouch.clientY;
 
-    // 터치 좌표와 버튼 위치를 로그로 출력
-    console.log(`Touch start: (${touchStartX}, ${touchStartY})`);
-    console.log(`Button: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
-
-    if (touchStartX > button.x && touchStartX < button.x + button.width &&
-        touchStartY > button.y && touchStartY < button.y + button.height) {
-        // 버튼을 터치했을 때 공격 실행
-        isAttacking = true;
-        attackFrameX = 0;
-        attackSound.play();
-        if (checkCollision(player, menu)) {
-            if (menu.health > 0) {
-                startFlashing(menu);
-                menu.health = 0;
-                if (menu.health <= 0) {
-                    window.location.href = menu.url;
-                }
-            }
-        }
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTouchTime;
+    if (tapLength < 300 && tapLength > 0) {
+        // 두 번 터치 간격이 300ms 이내면 공격 실행
+        attack();
     }
+    lastTouchTime = currentTime;
 }
 
 function handleTouchMove(event) {
@@ -456,16 +421,6 @@ function handleTouchMove(event) {
     const touchEndY = touch.clientY;
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
-
-    // 터치 좌표와 버튼 위치를 로그로 출력
-    console.log(`Touch move: (${touchEndX}, ${touchEndY})`);
-    console.log(`Button: (${button.x}, ${button.y}, ${button.width}, ${button.height})`);
-
-    // 버튼 영역에 터치된 경우 이동을 막음
-    if (touchStartX > button.x && touchStartX < button.x + button.width &&
-        touchStartY > button.y && touchStartY < button.y + button.height) {
-        return;
-    }
 
     if (Math.abs(diffX) > Math.abs(diffY)) {
         if (diffX > 0) {
@@ -495,7 +450,7 @@ function handleTouchEnd(event) {
     player.vx = 0;
 }
 
-const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage, buttonImage];
+const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage];
 let imagesLoaded = 0;
 
 function imageLoaded() {
