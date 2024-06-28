@@ -445,14 +445,12 @@ function handleTouchMove(event) {
     const diffY = touchEndY - touchStartY;
 
     if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (player.vx === 0) { // 현재 속도가 0일 때만 속도 설정
-            if (diffX > 0) {
-                player.vx = player.speed;
-                player.direction = 'right';
-            } else {
-                player.vx = -player.speed;
-                player.direction = 'left';
-            }
+        if (diffX > 0) {
+            player.vx = player.speed;
+            player.direction = 'right';
+        } else {
+            player.vx = -player.speed;
+            player.direction = 'left';
         }
     } else {
         if (diffY < -canvas.height * 0.05) { // 일정 거리 이상 위로 스와이프할 경우
