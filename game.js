@@ -115,6 +115,9 @@ menuImage.src = 'menu.png';  // 메뉴 이미지 경로
 const backgroundImage = new Image();
 backgroundImage.src = 'background.jpg';
 
+const youtubeImage = new Image();
+youtubeImage.src = "youtube.png";
+
 const spriteWidth = 40;
 const spriteHeight = 40;
 let frameX = 0;
@@ -134,10 +137,21 @@ const menu = {
     y: grounds[8].y * 1.1,
     width: canvas.width * 0.03,
     height: canvas.width * 0.03,
-    url: 'https://youtu.be/H5nCT2RaLbI?si=54Xnw7DD_mk8jnOB',
+    url: 'https://youtu.be/Rj7N4ThLGQY?si=cY0YOvOf2ZqsiwtX',
     health: 3,
     maxHealth: 3,
     isFlashing: false // 메뉴가 번쩍이는지 여부
+};
+
+const youtubeMenu = {
+    x: canvas.width * 0.53,
+    y: grounds[8].y * 1.2  ,
+    width: canvas.width * 0.03,
+    height: canvas.width * 0.03,
+    url: 'https://www.youtube.com/channel/UCCXUYN9QseK5CVn3SLB4upw',
+    health: 3,
+    maxHealth: 3,
+    isFlashing: false // 유튜브 메뉴가 번쩍이는지 여부
 };
 
 const attackSound = new Audio('attack.mp3');
@@ -167,6 +181,19 @@ function drawMenu(menu) {
         ctx.restore();
     } else {
         ctx.drawImage(menuImage, menu.x, menu.y, menu.width, menu.height);
+    }
+}
+
+function drawYoutubeMenu(menu) {
+    if (menu.isFlashing) {
+        // 하얀색으로 번쩍이게 하기 위해 밝기 조정
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.filter = 'brightness(3)';
+        ctx.drawImage(youtubeImage, menu.x, menu.y, menu.width, menu.height);
+        ctx.restore();
+    } else {
+        ctx.drawImage(youtubeImage, menu.x, menu.y, menu.width, menu.height);
     }
 }
 
@@ -225,6 +252,7 @@ function update() {
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     drawGrounds();
     drawMenu(menu);
+    drawYoutubeMenu(youtubeMenu);
     drawDustParticles();
 
     const flip = player.direction === 'left';
@@ -248,6 +276,19 @@ function update() {
                 attackSound.play(); // 공격 소리 재생
                 if (menu.health <= 0) {
                     window.location.href = menu.url;
+                }
+            }
+        }
+        if (checkCollision(player, youtubeMenu)) {
+            if (youtubeMenu.health > 0) {
+                youtubeMenu.isFlashing = true; // 유튜브 메뉴가 번쩍이게 설정
+                setTimeout(() => {
+                    youtubeMenu.isFlashing = false; // 번쩍임을 종료
+                }, 100); // 100ms 후에 종료
+                youtubeMenu.health = 0; // 체력을 모두 감소시킴
+                attackSound.play(); // 공격 소리 재생
+                if (youtubeMenu.health <= 0) {
+                    window.location.href = youtubeMenu.url;
                 }
             }
         }
@@ -384,6 +425,15 @@ function attack() {
             }
         }
     }
+    if (checkCollision(player, youtubeMenu)) {
+        if (youtubeMenu.health > 0) {
+            startFlashing(youtubeMenu); // 번쩍임 효과 시작
+            youtubeMenu.health = 0; // 체력을 모두 감소시킴
+            if (youtubeMenu.health <= 0) {
+                window.location.href = youtubeMenu.url;
+            }
+        }
+    }
 }
 
 function jump(event) {
@@ -472,7 +522,7 @@ function handleTouchEnd(event) {
     player.vx = 0;
 }
 
-const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage];
+const images = [playerImage, attackImage, jumpImage, fallImage, menuImage, backgroundImage, youtubeImage];
 let imagesLoaded = 0;
 
 function imageLoaded() {
