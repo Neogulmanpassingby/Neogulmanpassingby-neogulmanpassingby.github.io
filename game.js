@@ -137,7 +137,7 @@ const menu = {
     y: grounds[8].y * 1.1,
     width: canvas.width * 0.03,
     height: canvas.width * 0.03,
-    url: 'https://youtu.be/ZUwaudw8ht0?si=uZrGo0aLpVLv0d_W',
+    url: 'https://youtu.be/ali6HQtxIbg?si=CY6ZliRQTU8VBBPq',
     health: 3,
     maxHealth: 3,
     isFlashing: false // 메뉴가 번쩍이는지 여부
