@@ -148,7 +148,7 @@ const youtubeMenu = {
     y: grounds[8].y * 1.2  ,
     width: canvas.width * 0.03,
     height: canvas.width * 0.03,
-    url: 'https://www.youtube.com/channel/UCCXUYN9QseK5CVn3SLB4upw',
+    url: 'https://youtu.be/Zb9dm0DZyZ4?si=2Zqo0OT3_2HJEs-R',
     health: 3,
     maxHealth: 3,
     isFlashing: false // 유튜브 메뉴가 번쩍이는지 여부
