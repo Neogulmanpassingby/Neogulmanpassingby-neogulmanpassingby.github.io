@@ -137,7 +137,7 @@ const menu = {
     y: grounds[8].y * 1.1,
     width: canvas.width * 0.03,
     height: canvas.width * 0.03,
-    url: 'https://youtu.be/ali6HQtxIbg?si=CY6ZliRQTU8VBBPq',
+    url: 'https://youtu.be/w46luJ4rUqw?si=X6FxB-vjsJJWTiaD',
     health: 3,
     maxHealth: 3,
     isFlashing: false // 메뉴가 번쩍이는지 여부
@@ -148,7 +148,7 @@ const youtubeMenu = {
     y: grounds[8].y * 1.2  ,
     width: canvas.width * 0.03,
     height: canvas.width * 0.03,
-    url: 'https://youtu.be/Zb9dm0DZyZ4?si=2Zqo0OT3_2HJEs-R',
+    url: 'https://www.youtube.com/@%EB%84%88%EA%B5%AC%EB%A6%AC%EB%86%80%EC%9D%B4%ED%84%B0/videos',
     health: 3,
     maxHealth: 3,
     isFlashing: false // 유튜브 메뉴가 번쩍이는지 여부
